@@ -1,0 +1,56 @@
+<!-- src/main/resources/templates/dashboard.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="fragments/layout :: layout('Dashboard', ~{::content})">
+
+<div th:fragment="content" class="mt-4">
+    <!-- Hero Section -->
+    <div class="p-4 mb-5 bg-primary text-white rounded shadow-sm">
+        <h2 class="mb-1"><i class="bi bi-house-door-fill me-2"></i>Welcome, <span sec:authentication="name"></span>!</h2>
+    </div>
+
+    <div class="row g-4">
+        <!-- Quick Links Card -->
+        <div class="col-lg-6">
+            <div class="card h-100 border-0 shadow-sm rounded">
+                <div class="card-header bg-white border-0">
+                    <h5 class="card-title mb-0"><i class="bi bi-lightning-fill text-primary me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body bg-light">
+                    <div class="d-grid gap-3">
+                        <a th:href="@{/dashboard/profile}" class="btn btn-outline-primary btn-lg d-flex align-items-center justify-content-center">
+                            <i class="bi bi-person me-2"></i> View Profile
+                        </a>
+                        <a th:href="@{/dashboard/urls}" class="btn btn-outline-success btn-lg d-flex align-items-center justify-content-center">
+                            <i class="bi bi-link-45deg me-2"></i> Manage URLs
+                        </a>
+                        <a th:href="@{/dashboard/users}" class="btn btn-outline-secondary btn-lg d-flex align-items-center justify-content-center" sec:authorize="hasRole('ADMIN')">
+                            <i class="bi bi-people me-2"></i> Manage Users
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Info Card -->
+        <div class="col-lg-6">
+            <div class="card h-100 border-0 shadow-sm rounded">
+                <div class="card-header bg-white border-0">
+                    <h5 class="card-title mb-0"><i class="bi bi-info-circle-fill text-info me-2"></i>System Info</h5>
+                </div>
+                <div class="card-body bg-light">
+                    <ul class="list-group list-group-flush border-0">
+                        <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center px-0">
+                            <span><i class="bi bi-clock-fill me-2"></i>Current Time</span>
+                            <span th:text="${#temporals.format(#temporals.createNow(), 'dd MMM yyyy, HH:mm')}"></span>
+                        </li>
+                        <!-- placeholder for other system stats -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</html>
