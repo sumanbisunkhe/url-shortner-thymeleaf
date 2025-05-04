@@ -9,6 +9,8 @@ import com.example.urlshortner.model.ShortUrl;
 import com.example.urlshortner.repository.ShortUrlRepository;
 import com.example.urlshortner.service.UrlService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +34,7 @@ public class UrlServiceImpl implements UrlService {
 
     @Override
     @Transactional
-    public UrlResponse shortenUrl(UrlRequest urlRequest) {
+    public UrlResponse shortenUrl(UrlRequest urlRequest, String username) {
         String originalUrl = urlRequest.getOriginalUrl();
         int validityDays = urlRequest.getValidityDays();
 
@@ -47,6 +49,7 @@ public class UrlServiceImpl implements UrlService {
                 .originalUrl(originalUrl)
                 .shortCode(shortCode)
                 .expirationDate(LocalDateTime.now().plusDays(validityDays))
+                .createdBy(username)
                 .build();
 
         return mapper.toResponse(repository.save(newUrl));
@@ -75,6 +78,55 @@ public class UrlServiceImpl implements UrlService {
     public UrlResponse getUrlStats(String shortCode) {
         return mapper.toResponse(repository.findByShortCode(shortCode)
                 .orElseThrow(() -> new ShortCodeNotFoundException("Short code not found")));
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<UrlResponse> getUrlsByUsername(String username, Pageable pageable) {
+        Page<ShortUrl> shortUrls = repository.findAllByCreatedByOrderByCreatedAtDesc(username, pageable);
+        return shortUrls.map(mapper::toResponse);
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<UrlResponse> getAllUrls(Pageable pageable) {
+        Page<ShortUrl> shortUrls = repository.findAllByOrderByCreatedAtDesc(pageable);
+        return shortUrls.map(mapper::toResponse);
+    }
+
+    @Override
+    @Transactional
+    public UrlResponse deactivateUrl(String shortCode) {
+        int updated = repository.updateActiveStatus(shortCode, false);
+        if (updated == 0) {
+            throw new ShortCodeNotFoundException("Short code not found");
+        }
+        return getUrlStats(shortCode);
+    }
+
+    @Override
+    @Transactional
+    public UrlResponse activateUrl(String shortCode) {
+        ShortUrl shortUrl = repository.findByShortCode(shortCode)
+                .orElseThrow(() -> new ShortCodeNotFoundException("Short code not found"));
+
+        if (LocalDateTime.now().isAfter(shortUrl.getExpirationDate())) {
+            throw new UrlExpiredException("Cannot activate expired URL");
+        }
+
+        int updated = repository.updateActiveStatus(shortCode, true);
+        return getUrlStats(shortCode);
+    }
+
+    @Override
+    @Transactional
+    public void deleteUrl(String shortCode) {
+        if (!repository.existsByShortCode(shortCode)) {
+            throw new ShortCodeNotFoundException("Short code not found");
+        }
+        repository.deleteByShortCode(shortCode);
     }
 
     private String generateShortCode(String originalUrl) {

@@ -40,6 +40,8 @@ The system allows users to:
 - Role-based access control
 - Secure API endpoints
 - Structured error handling
+- Session management with secure cookies
+- CSRF protection
 
 </td>
 <td>
@@ -49,6 +51,8 @@ The system allows users to:
 - Custom alias support
 - URL expiration settings
 - Usage analytics tracking
+- Active/Inactive URL status
+- Pagination support
 
 </td>
 </tr>
@@ -60,6 +64,8 @@ The system allows users to:
 - Profile management
 - Personal URL dashboard
 - Activity history
+- Role-based permissions
+- User management (CRUD)
 
 </td>
 <td>
@@ -69,6 +75,8 @@ The system allows users to:
 - Comprehensive logging
 - Error tracking
 - DevOps-ready configuration
+- Thymeleaf templating
+- Responsive UI design
 
 </td>
 </tr>
@@ -82,15 +90,18 @@ graph LR
     A[Spring Boot] --> B[Spring Security]
     B --> C[JWT Authentication]
     A --> D[Spring Data JPA]
+    A --> E[Thymeleaf]
+    A --> F[MySQL]
 ```
 
 ### Key Components
 - **Backend Framework**: Spring Boot 3.4.5
-- **Database**: MySQL
+- **Database**: MySQL 8.0+
 - **Authentication**: JWT with Spring Security
-- **Templating**: Thymeleaf
+- **Templating**: Thymeleaf 3.1.1
 - **Utilities**: Lombok, MapStruct
 - **Validation**: Spring Validation
+- **Logging**: SLF4J with DEBUG level
 
 ## 📦 Installation
 
@@ -109,7 +120,9 @@ cd urlshortner
 2. **Configure Database**
    Create `application.properties`:
  ```properties
+# Application Configuration
 spring.application.name=urlshortner
+app.base-url=http://localhost:8080/
 
 # MySQL Database Configuration
 spring.datasource.url=jdbc:mysql://localhost:3306/urlshortner_db
@@ -123,9 +136,22 @@ spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
 
 # JWT Configuration
-jwt.secret=YCV1PkmMCYmkYW3YU1/25XULo7yZyA5ahV57Tr0qdUo=
+jwt.secret=your-secret-key
 jwt.access-token-expiration=86400000
 jwt.refresh-token-expiration=2592000000
+
+# Logging Configuration
+logging.level.com.example.urlshortner=DEBUG
+logging.level.org.springframework.security=DEBUG
+
+# Thymeleaf Configuration
+spring.thymeleaf.cache=false
+spring.thymeleaf.enabled=true
+
+# Security Configuration
+server.servlet.session.cookie.secure=false
+server.servlet.session.cookie.http-only=true
+server.servlet.session.cookie.same-site=lax
 ```
 
 3. **Build & Run**
@@ -139,7 +165,7 @@ mvn spring-boot:run
 ```
 src/main/java/com/example/urlshortner/
 ├── config/           # Configuration classes
-├── controller/       # REST controllers
+├── controller/       # REST and MVC controllers
 ├── dto/             # Data Transfer Objects
 ├── enums/           # Enumeration types
 ├── exception/       # Custom exception handling
@@ -149,6 +175,11 @@ src/main/java/com/example/urlshortner/
 ├── security/        # Security configuration
 ├── service/         # Business logic
 └── util/            # Utility classes
+
+src/main/resources/
+├── static/          # Static resources
+├── templates/       # Thymeleaf templates
+└── application.properties
 ```
 
 ## 🔧 Core Dependencies
@@ -163,6 +194,8 @@ src/main/java/com/example/urlshortner/
 - spring-boot-starter-data-jpa
 - spring-boot-starter-security
 - spring-boot-starter-thymeleaf
+- spring-boot-starter-validation
+- spring-boot-devtools
 
 </td>
 </tr>
@@ -173,6 +206,7 @@ src/main/java/com/example/urlshortner/
 - jjwt-api
 - jjwt-impl
 - jjwt-jackson
+- thymeleaf-extras-springsecurity6
 
 </td>
 </tr>
@@ -191,6 +225,7 @@ src/main/java/com/example/urlshortner/
 - lombok
 - mapstruct
 - mapstruct-processor
+- lombok-mapstruct-binding
 
 </td>
 </tr>
@@ -216,6 +251,17 @@ src/main/java/com/example/urlshortner/
 #### User Management
 - `GET /api/users/profile` - Get user profile
 - `PUT /api/users/profile` - Update user profile
+- `GET /dashboard/users` - List all users (Admin)
+- `POST /dashboard/users` - Create new user (Admin)
+- `PUT /dashboard/users/{id}` - Update user (Admin)
+- `DELETE /dashboard/users/{id}` - Delete user (Admin)
+
+### Web Interface
+- `/dashboard` - User dashboard
+- `/dashboard/profile` - User profile
+- `/dashboard/users` - User management (Admin)
+- `/login` - Login page
+- `/register` - Registration page
 
 ## 🤝 Contributing
 

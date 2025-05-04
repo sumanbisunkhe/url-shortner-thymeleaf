@@ -66,7 +66,7 @@ public class AuthController {
             response.addCookie(accessCookie);
 
             // Redirect to dashboard
-            return "redirect:/dashboard";
+            return "redirect:/urls";
         } catch (AuthenticationException e) {
             log.error("Authentication failed: {}", e.getMessage());
             model.addAttribute("error", "Invalid username/email or password");

@@ -37,4 +37,7 @@ public class ShortUrl {
     @Builder.Default
     @Column(nullable = false)
     private boolean active = true;
+
+    @Column(nullable = false)
+    private String createdBy;
 }

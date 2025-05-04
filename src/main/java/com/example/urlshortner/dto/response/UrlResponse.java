@@ -19,4 +19,6 @@ public class UrlResponse {
 
     private int clickCount;
     private boolean active;
+    private String createdBy;
+
 }

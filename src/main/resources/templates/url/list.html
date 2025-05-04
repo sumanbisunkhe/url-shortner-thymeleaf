@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{fragments/layout :: layout(pageTitle='My URLs', content=~{:: #main-content})}">
+<div id="main-content">
+    <style>
+        /* Custom styles for list page */
+        .app-container {
+            min-height: calc(100vh - 56px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.05) 0%, rgba(var(--bs-primary-rgb), 0.1) 100%);
+            border-radius: 1rem;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--bs-primary);
+            margin-bottom: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .list-card {
+            border: none;
+            border-radius: 1rem;
+            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .list-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.12);
+        }
+
+        .nav-tabs {
+            border-bottom: none;
+            padding: 0.5rem 0.5rem 0;
+            gap: 0.5rem;
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            border-radius: 0.75rem 0.75rem 0 0;
+            padding: 1rem 1.5rem;
+            font-weight: 500;
+            color: var(--bs-secondary);
+            transition: all 0.3s;
+        }
+
+        .nav-tabs .nav-link:hover {
+            background-color: rgba(var(--bs-primary-rgb), 0.05);
+            color: var(--bs-primary);
+        }
+
+        .tab-content {
+            background-color: #fff;
+            border-radius: 0 0 1rem 1rem;
+        }
+
+        .search-filter-row {
+            background-color: rgba(var(--bs-light-rgb), 0.5);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-input {
+            border-radius: 0.5rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 0.75rem 1rem;
+            transition: all 0.3s;
+        }
+
+        .search-input:focus {
+            border-color: rgba(var(--bs-primary-rgb), 0.4);
+            box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.1);
+        }
+
+        .filter-btn-group .btn {
+            border-radius: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .filter-btn-group .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .table-responsive {
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table th {
+            background-color: rgba(var(--bs-light-rgb), 0.7);
+            font-weight: 600;
+            color: var(--bs-secondary);
+            padding: 1rem;
+            white-space: nowrap;
+        }
+
+        .table td {
+            padding: 1rem;
+            vertical-align: middle;
+        }
+
+        .table tr:hover {
+            background-color: rgba(var(--bs-primary-rgb), 0.02);
+        }
+
+        .short-code-link {
+            font-weight: 600;
+            color: var(--bs-primary);
+            display: inline-flex;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .short-code-link:hover {
+            transform: translateY(-2px);
+        }
+
+        .url-truncate {
+            max-width: 250px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: inline-block;
+        }
+
+        .click-badge {
+            background-color: rgba(var(--bs-light-rgb), 0.7);
+            color: var(--bs-dark);
+            font-weight: 500;
+            padding: 0.5rem 0.75rem;
+            border-radius: 2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .click-badge i {
+            color: var(--bs-primary);
+        }
+
+        .status-badge {
+            padding: 0.5rem 0.75rem;
+            border-radius: 2rem;
+            font-weight: 500;
+        }
+
+        .action-btn-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .empty-state {
+            padding: 3rem 1rem;
+            text-align: center;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            color: rgba(var(--bs-primary-rgb), 0.3);
+            margin-bottom: 1.5rem;
+        }
+
+        .empty-state-text {
+            font-size: 1.25rem;
+            color: var(--bs-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .pagination {
+            margin-top: 1.5rem;
+            justify-content: center;
+        }
+
+        .pagination .page-link {
+            border-radius: 0.5rem;
+            margin: 0 0.25rem;
+            padding: 0.5rem 0.75rem;
+            color: var(--bs-primary);
+            border: none;
+            transition: all 0.3s;
+        }
+
+        .pagination .page-link:hover {
+            background-color: rgba(var(--bs-primary-rgb), 0.1);
+            transform: translateY(-2px);
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: var(--bs-primary);
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .btn-action {
+            border-radius: 0.75rem;
+            padding: 0.75rem 1.25rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-action i {
+            transition: transform 0.2s;
+        }
+
+        .btn-action:hover i {
+            transform: scale(1.2);
+        }
+
+        /* Custom Modal Styles */
+        .modal-confirm {
+            color: #636363;
+        }
+
+        .modal-confirm .modal-header {
+            border-bottom: none;
+            position: relative;
+            padding-bottom: 0;
+        }
+
+        .modal-confirm h4 {
+            font-weight: 600;
+        }
+
+        .modal-confirm .modal-body {
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        .modal-confirm .modal-footer {
+            border: none;
+            text-align: center;
+            border-radius: 5px;
+            padding: 10px 0 20px;
+        }
+
+        .modal-confirm .icon-box {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            z-index: 9;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-confirm .icon-box i {
+            font-size: 2.5rem;
+        }
+
+        .modal-confirm.modal-delete .icon-box {
+            background: #ffebee;
+            color: #f44336;
+        }
+
+        .modal-confirm.modal-activate .icon-box {
+            background: #e8f5e9;
+            color: #4caf50;
+        }
+
+        .modal-confirm.modal-deactivate .icon-box {
+            background: #fff8e1;
+            color: #ff9800;
+        }
+
+        .modal-confirm .btn {
+            color: #fff;
+            border-radius: 0.5rem;
+            min-width: 120px;
+            font-weight: 500;
+            transition: all 0.3s;
+            padding: 0.5rem 1.25rem;
+        }
+
+        .modal-confirm .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-confirm .btn-secondary {
+            background: #a3a3a3;
+        }
+
+        .modal-confirm .btn-danger {
+            background: #f44336;
+        }
+
+        .modal-confirm .btn-success {
+            background: #4caf50;
+        }
+
+        .modal-confirm .btn-warning {
+            background: #ff9800;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .page-header {
+                padding: 1.25rem;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .nav-tabs .nav-link {
+                padding: 0.75rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .search-filter-row {
+                flex-direction: column;
+            }
+
+            .filter-btn-group {
+                margin-top: 1rem;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .url-truncate {
+                max-width: 150px;
+            }
+        }
+    </style>
+
+    <div class="app-container py-4">
+        <div class="container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="bi bi-link-45deg me-2"></i>URL Management
+                </h1>
+                <div class="d-flex gap-2">
+                    <a th:href="@{/urls}" class="btn btn-primary btn-action">
+                        <i class="bi bi-plus-circle me-2"></i>Create New URL
+                    </a>
+                    <a th:href="@{/dashboard}" class="btn btn-outline-secondary btn-action">
+                        <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                    </a>
+                </div>
+            </div>
+
+            <!-- Success/Error alerts -->
+            <div th:if="${success != null}" class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <div th:if="${error != null}" class="alert alert-danger alert-dismissible fade show rounded-3 shadow-sm" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <div class="list-card">
+                <!-- Tabs -->
+                <ul class="nav nav-tabs" id="urlTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="my-urls-tab" data-bs-toggle="tab" data-bs-target="#my-urls"
+                                type="button" role="tab" aria-controls="my-urls" aria-selected="true">
+                            <i class="bi bi-person-badge me-2"></i>My URLs
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation" sec:authorize="hasRole('ADMIN')">
+                        <button class="nav-link" id="all-urls-tab" data-bs-toggle="tab" data-bs-target="#all-urls"
+                                type="button" role="tab" aria-controls="all-urls" aria-selected="false">
+                            <i class="bi bi-globe me-2"></i>All URLs
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content p-4" id="urlTabsContent">
+                    <!-- My URLs Tab -->
+                    <div class="tab-pane fade" id="my-urls" role="tabpanel" aria-labelledby="my-urls-tab">
+                        <!-- Search and filter options -->
+                        <div class="search-filter-row d-flex justify-content-between align-items-center">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">
+                                        <i class="bi bi-search"></i>
+                                    </span>
+                                    <label for="myUrlSearch"></label><input type="text" class="form-control search-input" id="myUrlSearch" placeholder="Search your URLs...">
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-md-end">
+                                <div class="btn-group filter-btn-group">
+                                    <button type="button" class="btn btn-outline-primary active" onclick="filterUrls('all')">
+                                        All
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary" onclick="filterUrls('active')">
+                                        Active
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary" onclick="filterUrls('inactive')">
+                                        Inactive
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="myUrlsTable">
+                                <thead>
+                                <tr>
+                                    <th>Short Code</th>
+                                    <th>Original URL</th>
+                                    <th>Clicks</th>
+                                    <th>Created</th>
+                                    <th>Expires</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="url : ${userUrls}" th:data-status="${url.active ? 'active' : 'inactive'}">
+                                    <td>
+                                        <a th:href="@{'/urls/' + ${url.shortCode}}"
+                                           class="short-code-link text-decoration-none">
+                                            <i class="bi bi-link-45deg me-1"></i>
+                                            <span th:text="${url.shortCode}"></span>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <span th:text="${#strings.abbreviate(url.originalUrl, 30)}"
+                                              class="url-truncate"
+                                              data-bs-toggle="tooltip"
+                                              th:title="${url.originalUrl}"></span>
+                                    </td>
+                                    <td>
+                                        <span class="click-badge">
+                                            <i class="bi bi-cursor-fill"></i>
+                                            <span th:text="${url.clickCount}"></span>
+                                        </span>
+                                    </td>
+                                    <td th:text="${#temporals.format(url.createdAt, 'MMM dd, yyyy')}"></td>
+                                    <td th:text="${#temporals.format(url.expirationDate, 'MMM dd, yyyy')}"></td>
+                                    <td>
+                                        <span th:if="${url.active}" class="status-badge bg-success text-white">Active</span>
+                                        <span th:unless="${url.active}" class="status-badge bg-secondary text-white">Inactive</span>
+                                    </td>
+                                    <td>
+                                        <div class="action-btn-group">
+                                            <a th:href="@{'/urls/' + ${url.shortCode}}"
+                                               class="btn btn-sm btn-outline-primary action-btn"
+                                               data-bs-toggle="tooltip"
+                                               title="View Stats">
+                                                <i class="bi bi-graph-up"></i>
+                                            </a>
+                                            <button th:if="${url.active}"
+                                                    type="button"
+                                                    class="btn btn-sm btn-outline-warning action-btn"
+                                                    data-bs-toggle="tooltip"
+                                                    title="Deactivate"
+                                                    th:data-shortcode="${url.shortCode}"
+                                                    onclick="showDeactivateModal(this.getAttribute('data-shortcode'))">
+                                                <i class="bi bi-pause-fill"></i>
+                                            </button>
+                                            <button th:unless="${url.active}"
+                                                    type="button"
+                                                    class="btn btn-sm btn-outline-success action-btn"
+                                                    data-bs-toggle="tooltip"
+                                                    title="Activate"
+                                                    th:data-shortcode="${url.shortCode}"
+                                                    onclick="showActivateModal(this.getAttribute('data-shortcode'))">
+                                                <i class="bi bi-play-fill"></i>
+                                            </button>
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-danger action-btn"
+                                                    data-bs-toggle="tooltip"
+                                                    title="Delete"
+                                                    th:data-shortcode="${url.shortCode}"
+                                                    onclick="showDeleteModal(this.getAttribute('data-shortcode'))">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${userUrls.isEmpty()}">
+                                    <td colspan="7">
+                                        <div class="empty-state">
+                                            <i class="bi bi-link-45deg empty-state-icon"></i>
+                                            <p class="empty-state-text">You haven't created any URLs yet</p>
+                                            <a th:href="@{/urls}" class="btn btn-primary btn-action">
+                                                <i class="bi bi-plus-circle me-2"></i>Create Your First URL
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div th:if="${userUrls.totalPages > 1}" class="d-flex justify-content-center mt-4">
+                            <nav aria-label="User URLs pagination">
+                                <ul class="pagination">
+                                    <li class="page-item" th:classappend="${userUrls.first} ? 'disabled' : ''">
+                                        <a class="page-link" th:href="@{'/urls/my-urls?userPage=' + ${userUrls.number - 1} + '&allPage=' + ${allUrls.number} + '&activeTab=my-urls'}">
+                                            <i class="bi bi-chevron-left"></i>
+                                        </a>
+                                    </li>
+                                    <li th:each="page : ${#numbers.sequence(1, userUrls.totalPages)}"
+                                        class="page-item"
+                                        th:classappend="${userUrls.number + 1 == page} ? 'active' : ''">
+                                        <a class="page-link"
+                                           th:href="@{'/urls/my-urls?userPage=' + ${page - 1} + '&allPage=' + ${allUrls.number} + '&activeTab=my-urls'}"
+                                           th:text="${page}"></a>
+                                    </li>
+                                    <li class="page-item" th:classappend="${userUrls.last} ? 'disabled' : ''">
+                                        <a class="page-link" th:href="@{'/urls/my-urls?userPage=' + ${userUrls.number + 1} + '&allPage=' + ${allUrls.number} + '&activeTab=my-urls'}">
+                                            <i class="bi bi-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+
+                    <!-- All URLs Tab (Admin Only) -->
+                    <div class="tab-pane fade" id="all-urls" role="tabpanel" aria-labelledby="all-urls-tab" sec:authorize="hasRole('ADMIN')">
+                        <!-- Search and filter options for admin -->
+                        <div class="search-filter-row d-flex justify-content-between align-items-center">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">
+                                        <i class="bi bi-search"></i>
+                                    </span>
+                                    <label for="adminUrlSearch"></label><input type="text" class="form-control search-input" id="adminUrlSearch" placeholder="Search all URLs...">
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-md-end">
+                                <div class="btn-group filter-btn-group">
+                                    <button type="button" class="btn btn-outline-primary active" onclick="filterAdminUrls('all')">
+                                        All
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary" onclick="filterAdminUrls('active')">
+                                        Active
+                                    </button>
+                                    <button type="button" class="btn btn-outline-primary" onclick="filterAdminUrls('inactive')">
+                                        Inactive
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="adminUrlsTable">
+                                <thead>
+                                <tr>
+                                    <th>Short Code</th>
+                                    <th>Original URL</th>
+                                    <th>Owner</th>
+                                    <th>Clicks</th>
+                                    <th>Created</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="url : ${allUrls}" th:data-status="${url.active ? 'active' : 'inactive'}">
+                                    <td>
+                                        <a th:href="@{'/urls/' + ${url.shortCode}}"
+                                           class="short-code-link text-decoration-none">
+                                            <i class="bi bi-link-45deg me-1"></i>
+                                            <span th:text="${url.shortCode}"></span>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <span th:text="${#strings.abbreviate(url.originalUrl, 30)}"
+                                              class="url-truncate"
+                                              data-bs-toggle="tooltip"
+                                              th:title="${url.originalUrl}"></span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark">
+                                            <i class="bi bi-person me-1"></i>
+                                            <span th:text="${url.createdBy}"></span>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="click-badge">
+                                            <i class="bi bi-cursor-fill"></i>
+                                            <span th:text="${url.clickCount}"></span>
+                                        </span>
+                                    </td>
+                                    <td th:text="${#temporals.format(url.createdAt, 'MMM dd, yyyy')}"></td>
+                                    <td>
+                                        <span th:if="${url.active}" class="status-badge bg-success text-white">Active</span>
+                                        <span th:unless="${url.active}" class="status-badge bg-secondary text-white">Inactive</span>
+                                    </td>
+                                    <td>
+                                        <div class="action-btn-group">
+                                            <a th:href="@{'/urls/' + ${url.shortCode}}"
+                                               class="btn btn-sm btn-outline-primary action-btn"
+                                               data-bs-toggle="tooltip"
+                                               title="View Stats">
+                                                <i class="bi bi-graph-up"></i>
+                                            </a>
+                                            <button th:if="${url.active}"
+                                                    type="button"
+                                                    class="btn btn-sm btn-outline-warning action-btn"
+                                                    data-bs-toggle="tooltip"
+                                                    title="Deactivate"
+                                                    th:data-shortcode="${url.shortCode}"
+                                                    onclick="showDeactivateModal(this.getAttribute('data-shortcode'))">
+                                                <i class="bi bi-pause-fill"></i>
+                                            </button>
+                                            <button th:unless="${url.active}"
+                                                    type="button"
+                                                    class="btn btn-sm btn-outline-success action-btn"
+                                                    data-bs-toggle="tooltip"
+                                                    title="Activate"
+                                                    th:data-shortcode="${url.shortCode}"
+                                                    onclick="showActivateModal(this.getAttribute('data-shortcode'))">
+                                                <i class="bi bi-play-fill"></i>
+                                            </button>
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-danger action-btn"
+                                                    data-bs-toggle="tooltip"
+                                                    title="Delete"
+                                                    th:data-shortcode="${url.shortCode}"
+                                                    onclick="showDeleteModal(this.getAttribute('data-shortcode'))">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${allUrls.isEmpty()}">
+                                    <td colspan="7">
+                                        <div class="empty-state">
+                                            <i class="bi bi-link-45deg empty-state-icon"></i>
+                                            <p class="empty-state-text">No URLs found in the system</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination for admin view -->
+                        <div th:if="${allUrls.totalPages > 1}" class="d-flex justify-content-center mt-4">
+                            <nav aria-label="All URLs pagination">
+                                <ul class="pagination">
+                                    <li class="page-item" th:classappend="${allUrls.first} ? 'disabled' : ''">
+                                        <a class="page-link" th:href="@{'/urls/my-urls?userPage=' + ${userUrls.number} + '&allPage=' + ${allUrls.number - 1} + '&activeTab=all-urls'}">
+                                            <i class="bi bi-chevron-left"></i>
+                                        </a>
+                                    </li>
+                                    <li th:each="page : ${#numbers.sequence(1, allUrls.totalPages)}"
+                                        class="page-item"
+                                        th:classappend="${allUrls.number + 1 == page} ? 'active' : ''">
+                                        <a class="page-link"
+                                           th:href="@{'/urls/my-urls?userPage=' + ${userUrls.number} + '&allPage=' + ${page - 1} + '&activeTab=all-urls'}"
+                                           th:text="${page}"></a>
+                                    </li>
+                                    <li class="page-item" th:classappend="${allUrls.last} ? 'disabled' : ''">
+                                        <a class="page-link"
+                                           th:href="@{'/urls/my-urls?userPage=' + ${userUrls.number} + '&allPage=' + ${allUrls.number + 1} + '&activeTab=all-urls'}">
+                                            <i class="bi bi-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-confirm modal-delete">
+                <div class="modal-header">
+                    <h4 class="modal-title">Confirm Delete</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="icon-box">
+                        <i class="bi bi-trash"></i>
+                    </div>
+                    <h5 class="mb-4">Are you sure?</h5>
+                    <p>Do you really want to delete this URL? This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form id="deleteForm" method="post">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activate Confirmation Modal -->
+    <div class="modal fade" id="activateModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-confirm modal-activate">
+                <div class="modal-header">
+                    <h4 class="modal-title">Confirm Activation</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="icon-box">
+                        <i class="bi bi-play-fill"></i>
+                    </div>
+                    <h5 class="mb-4">Activate URL</h5>
+                    <p>Are you sure you want to activate this URL?</p>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form id="activateForm" method="post">
+                        <button type="submit" class="btn btn-success">Activate</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deactivate Confirmation Modal -->
+    <div class="modal fade" id="deactivateModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-confirm modal-deactivate">
+                <div class="modal-header">
+                    <h4 class="modal-title">Confirm Deactivation</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="icon-box">
+                        <i class="bi bi-pause-fill"></i>
+                    </div>
+                    <h5 class="mb-4">Deactivate URL</h5>
+                    <p>Are you sure you want to deactivate this URL?</p>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form id="deactivateForm" method="post">
+                        <button type="submit" class="btn btn-warning">Deactivate</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript for filtering, search, and modals -->
+    <script>
+        // Set active tab based on URL parameter
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get the active tab from URL parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const activeTab = urlParams.get('activeTab') || 'my-urls';
+
+            // Activate the correct tab
+            const tabElement = document.getElementById(activeTab + '-tab');
+            if (tabElement) {
+                const tab = new bootstrap.Tab(tabElement);
+                tab.show();
+            }
+
+            // Initialize tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+
+        // URL filtering for user URLs
+        function filterUrls(status) {
+            const rows = document.querySelectorAll('#myUrlsTable tbody tr:not([colspan])');
+            rows.forEach(row => {
+                if (status === 'all' || row.getAttribute('data-status') === status) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Update active button state
+            document.querySelectorAll('#my-urls .btn-group .btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`#my-urls .btn-group .btn:nth-child(${status === 'all' ? 1 : status === 'active' ? 2 : 3})`).classList.add('active');
+        }
+
+        // URL filtering for admin URLs
+        function filterAdminUrls(status) {
+            const rows = document.querySelectorAll('#adminUrlsTable tbody tr:not([colspan])');
+            rows.forEach(row => {
+                if (status === 'all' || row.getAttribute('data-status') === status) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Update active button state
+            document.querySelectorAll('#all-urls .btn-group .btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`#all-urls .btn-group .btn:nth-child(${status === 'all' ? 1 : status === 'active' ? 2 : 3})`).classList.add('active');
+        }
+
+        // Search functionality for user URLs
+        document.getElementById('myUrlSearch').addEventListener('keyup', function() {
+            const searchTerm = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#myUrlsTable tbody tr:not([colspan])');
+
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+
+        // Search functionality for admin URLs
+        document.getElementById('adminUrlSearch')?.addEventListener('keyup', function() {
+            const searchTerm = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#adminUrlsTable tbody tr:not([colspan])');
+
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+
+        // Modal functions
+        function showDeleteModal(shortCode) {
+            const form = document.getElementById('deleteForm');
+            form.action = `/urls/${shortCode}/delete`;
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            modal.show();
+        }
+
+        function showActivateModal(shortCode) {
+            const form = document.getElementById('activateForm');
+            form.action = `/urls/${shortCode}/activate`;
+            const modal = new bootstrap.Modal(document.getElementById('activateModal'));
+            modal.show();
+        }
+
+        function showDeactivateModal(shortCode) {
+            const form = document.getElementById('deactivateForm');
+            form.action = `/urls/${shortCode}/deactivate`;
+            const modal = new bootstrap.Modal(document.getElementById('deactivateModal'));
+            modal.show();
+        }
+    </script>
+</div>
+</html>
