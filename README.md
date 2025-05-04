@@ -276,7 +276,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## 👨‍💻 Author
 
 <div align="center">
-  <img src="src/main/resources/docs/prof.jpeg" style="width:100px; height:100px;border-radius:50%; " alt="Author Avatar">
 
 ### Suman Bisunkhe
 Java Developer
