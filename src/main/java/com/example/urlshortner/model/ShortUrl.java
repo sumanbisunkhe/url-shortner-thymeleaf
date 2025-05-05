@@ -40,4 +40,7 @@ public class ShortUrl {
 
     @Column(nullable = false)
     private String createdBy;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 }

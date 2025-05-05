@@ -473,7 +473,7 @@
                             </td>
                             <td th:text="${user.createdAt}"></td>
                             <td class="text-end">
-                                <a th:href="@{/dashboard/users/{id}(id=${user.id})}" class="action-btn view" title="View User">
+                                <a th:href="@{/dashboard/profile/{id}(id=${user.id})}" class="action-btn view" title="View User">
                                     <i class="bi bi-eye"></i>
                                 </a>
                                 <a th:href="@{/dashboard/users/{id}/edit(id=${user.id})}" class="action-btn edit" title="Edit User">

@@ -1,11 +1,14 @@
 package com.example.urlshortner.controller;
 
 import com.example.urlshortner.dto.request.UserRequest;
+import com.example.urlshortner.dto.response.UrlAnalyticsResponse;
+import com.example.urlshortner.dto.response.UrlResponse;
 import com.example.urlshortner.dto.response.UserResponse;
 import com.example.urlshortner.enums.Role;
 import com.example.urlshortner.exception.*;
 import com.example.urlshortner.model.User;
 import com.example.urlshortner.repository.UserRepository;
+import com.example.urlshortner.service.UrlService;
 import com.example.urlshortner.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,15 +29,18 @@ public class DashboardController {
 
     private final UserRepository userRepository;
     private final UserService userService;
+    private final UrlService urlService;
 
     @GetMapping
     public String dashboard(Model model) {
-        // Get the authenticated user
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
 
-        // Add user info to model if needed
+        UrlAnalyticsResponse url = urlService.getUrlAnalytics(userService.getUserByUsername(username).getId());
         model.addAttribute("username", username);
+        System.out.println(username);
+        model.addAttribute("url", url);
+        System.out.println(url);
 
         return "dashboard";
     }
@@ -107,6 +113,21 @@ public class DashboardController {
             return "redirect:/dashboard/users";
         }
     }
+    @GetMapping("/profile/{userId}")
+    public String viewUserProfile(@PathVariable Long userId, Model model) {
+
+        try {
+            UserResponse user = userService.getUserById(userId);
+            UrlResponse url = urlService.getUrlById(userId);
+            UrlAnalyticsResponse urlAnalytics = urlService.getUrlAnalytics(userId);
+            model.addAttribute("user", user);
+            model.addAttribute("url", url);
+            model.addAttribute("urlAnalytics", urlAnalytics);
+            return "users/profile-view";
+        } catch (ResourceNotFoundException e) {
+            return "redirect:/dashboard/users?error=user_not_found";
+        }
+    }
 
     @PostMapping("/users/{userId}")
     public String updateUser(
@@ -121,7 +142,7 @@ public class DashboardController {
             redirectAttributes.addFlashAttribute("error", "User not found");
         } catch (DuplicateUsernameException | DuplicateEmailException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/dashboard/users/" + userId + "/edit";
+            return "redirect:/dashboard/users/" + userId + "users/edit";
         }
         return "redirect:/dashboard/users";
     }

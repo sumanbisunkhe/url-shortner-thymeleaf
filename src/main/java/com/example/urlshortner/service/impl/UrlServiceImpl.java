@@ -1,20 +1,27 @@
 package com.example.urlshortner.service.impl;
 
 import com.example.urlshortner.dto.request.UrlRequest;
+import com.example.urlshortner.dto.response.UrlAnalyticsResponse;
 import com.example.urlshortner.dto.response.UrlResponse;
 import com.example.urlshortner.exception.ShortCodeNotFoundException;
 import com.example.urlshortner.exception.UrlExpiredException;
 import com.example.urlshortner.mapper.UrlMapper;
 import com.example.urlshortner.model.ShortUrl;
+import com.example.urlshortner.model.User;
 import com.example.urlshortner.repository.ShortUrlRepository;
+import com.example.urlshortner.repository.UserRepository;
 import com.example.urlshortner.service.UrlService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -29,6 +36,7 @@ public class UrlServiceImpl implements UrlService {
 
     private static final String BASE62 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     private final ShortUrlRepository repository;
+    private  final UserRepository userRepository;
     private final UrlMapper mapper;
 
 
@@ -44,12 +52,15 @@ public class UrlServiceImpl implements UrlService {
         while (repository.existsByShortCode(shortCode)) {
             shortCode = generateShortCode(originalUrl + System.currentTimeMillis());
         }
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User " + username + " not found"));
 
         ShortUrl newUrl = ShortUrl.builder()
                 .originalUrl(originalUrl)
                 .shortCode(shortCode)
                 .expirationDate(LocalDateTime.now().plusDays(validityDays))
                 .createdBy(username)
+                .user(user)
                 .build();
 
         return mapper.toResponse(repository.save(newUrl));
@@ -78,6 +89,12 @@ public class UrlServiceImpl implements UrlService {
     public UrlResponse getUrlStats(String shortCode) {
         return mapper.toResponse(repository.findByShortCode(shortCode)
                 .orElseThrow(() -> new ShortCodeNotFoundException("Short code not found")));
+    }
+
+    @Override
+    public UrlResponse getUrlById(Long id) {
+        return mapper.toResponse(repository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Username not found with id: " + id)));
     }
 
 
@@ -119,7 +136,49 @@ public class UrlServiceImpl implements UrlService {
         int updated = repository.updateActiveStatus(shortCode, true);
         return getUrlStats(shortCode);
     }
+    @Override
+    public UrlAnalyticsResponse getUrlAnalytics(Long userId) {
+        // Get total URLs count
+        long totalUrlCount = repository.countByUserId(userId);
 
+        // Get active URLs count
+        long activeUrlCount = repository.countByUserIdAndActiveAndExpirationDateAfter(
+                userId,
+                true,
+                LocalDateTime.now()
+        );
+
+        // Get total clicks
+        Long totalClicks = repository.sumClicksByUserId(userId);
+        if (totalClicks == null) {
+            totalClicks = 0L;
+        }
+
+        // Calculate average click rate
+        double averageClickRate;
+        if (totalUrlCount > 0) {
+            BigDecimal rate = BigDecimal.valueOf(totalClicks)
+                    .divide(BigDecimal.valueOf(totalUrlCount), 2, RoundingMode.HALF_UP);
+            averageClickRate = rate.doubleValue();
+        } else {
+            averageClickRate = 0.0;
+        }
+
+
+        // Get recent URLs (last 5 created)
+        Page<ShortUrl> recentUrls = repository.findAllByUserIdOrderByCreatedAtDesc(
+                userId,
+                PageRequest.of(0, 5)
+        );
+
+        return UrlAnalyticsResponse.builder()
+                .totalUrlCount(totalUrlCount)
+                .activeUrlCount(activeUrlCount)
+                .totalClicks(totalClicks)
+                .averageClickRate(averageClickRate)
+                .recentUrls(recentUrls.map(mapper::toResponse).getContent())
+                .build();
+    }
     @Override
     @Transactional
     public void deleteUrl(String shortCode) {
