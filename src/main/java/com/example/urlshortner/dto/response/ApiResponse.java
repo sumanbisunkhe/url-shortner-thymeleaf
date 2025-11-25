@@ -3,10 +3,7 @@ package com.example.urlshortner.dto.response;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Data;
-<<<<<<< HEAD
 
-=======
->>>>>>> c8a73bf542437b4a82eb4ae49705ad7fcf75a231
 import java.time.LocalDateTime;
 
 @Data

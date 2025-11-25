@@ -5,14 +5,8 @@ import com.example.urlshortner.dto.response.UrlAnalyticsResponse;
 import com.example.urlshortner.dto.response.UrlResponse;
 import com.example.urlshortner.dto.response.UserResponse;
 import com.example.urlshortner.enums.Role;
-<<<<<<< HEAD
-import com.example.urlshortner.exception.DuplicateEmailException;
-import com.example.urlshortner.exception.DuplicateUsernameException;
-import com.example.urlshortner.exception.ResourceNotFoundException;
-=======
 import com.example.urlshortner.exception.*;
 import com.example.urlshortner.model.User;
->>>>>>> c8a73bf542437b4a82eb4ae49705ad7fcf75a231
 import com.example.urlshortner.repository.UserRepository;
 import com.example.urlshortner.service.UrlService;
 import com.example.urlshortner.service.UserService;
@@ -21,10 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.Authentication;
-<<<<<<< HEAD
-=======
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
->>>>>>> c8a73bf542437b4a82eb4ae49705ad7fcf75a231
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -78,12 +69,10 @@ public class DashboardController {
         }
     }
 
-
     @GetMapping("/users")
     public String listUsers(
             @PageableDefault(size = 10) Pageable pageable,
-            Model model
-    ) {
+            Model model) {
         Page<UserResponse> users = userService.getAllUsers(pageable);
         model.addAttribute("users", users);
         return "users/list";
@@ -99,8 +88,7 @@ public class DashboardController {
     @PostMapping("/users")
     public String createUser(
             @ModelAttribute UserRequest userRequest,
-            RedirectAttributes redirectAttributes
-    ) {
+            RedirectAttributes redirectAttributes) {
         try {
             userService.createUser(userRequest);
             redirectAttributes.addFlashAttribute("success", "User created successfully");
@@ -122,6 +110,7 @@ public class DashboardController {
             return "redirect:/dashboard/users";
         }
     }
+
     @GetMapping("/profile/{userId}")
     public String viewUserProfile(@PathVariable Long userId, Model model) {
 
@@ -142,8 +131,7 @@ public class DashboardController {
     public String updateUser(
             @PathVariable Long userId,
             @ModelAttribute UserRequest userRequest,
-            RedirectAttributes redirectAttributes
-    ) {
+            RedirectAttributes redirectAttributes) {
         try {
             userService.updateUser(userId, userRequest);
             redirectAttributes.addFlashAttribute("success", "User updated successfully");

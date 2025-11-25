@@ -39,45 +39,28 @@ public class SecurityConfig {
                             } else {
                                 response.sendRedirect("/auth/login");
                             }
-                        })
-                )
+                        }))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**", "/css/**", "/js/**", "/favicon.ico").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                        .anyRequest().authenticated())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(handling -> handling
-                        .authenticationEntryPoint((request, response, authException) ->
-                                response.sendRedirect("/auth/login")
-                        )
-                );
-
+                        .authenticationEntryPoint(
+                                (request, response, authException) -> response.sendRedirect("/auth/login")));
 
         return http.build();
     }
 
-<<<<<<< HEAD
-    public  AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
-=======
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
->>>>>>> c8a73bf542437b4a82eb4ae49705ad7fcf75a231
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder);
         return provider;
     }
 
-<<<<<<< HEAD
-
-=======
->>>>>>> c8a73bf542437b4a82eb4ae49705ad7fcf75a231
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();

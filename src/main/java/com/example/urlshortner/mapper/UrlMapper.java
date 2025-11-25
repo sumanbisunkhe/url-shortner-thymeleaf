@@ -25,7 +25,7 @@ public interface UrlMapper {
     ShortUrl toEntity(UrlRequest urlRequest);
 
     /**
-            * Method to update an existing ShortUrl entity from a UrlRequest
+     * Method to update an existing ShortUrl entity from a UrlRequest
      */
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "shortCode", ignore = true)

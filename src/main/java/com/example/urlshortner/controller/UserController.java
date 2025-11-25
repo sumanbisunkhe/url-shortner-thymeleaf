@@ -3,13 +3,7 @@ package com.example.urlshortner.controller;
 import com.example.urlshortner.dto.request.UserRequest;
 import com.example.urlshortner.dto.response.UserResponse;
 import com.example.urlshortner.enums.Role;
-<<<<<<< HEAD
-import com.example.urlshortner.exception.DuplicateEmailException;
-import com.example.urlshortner.exception.DuplicateUsernameException;
-import com.example.urlshortner.exception.ResourceNotFoundException;
-=======
 import com.example.urlshortner.exception.*;
->>>>>>> c8a73bf542437b4a82eb4ae49705ad7fcf75a231
 import com.example.urlshortner.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -30,8 +24,7 @@ public class UserController {
     @GetMapping
     public String listUsers(
             @PageableDefault(size = 10) Pageable pageable,
-            Model model
-    ) {
+            Model model) {
         Page<UserResponse> users = userService.getAllUsers(pageable);
         model.addAttribute("users", users);
         return "users/list";
@@ -47,8 +40,7 @@ public class UserController {
     @PostMapping
     public String createUser(
             @ModelAttribute UserRequest userRequest,
-            RedirectAttributes redirectAttributes
-    ) {
+            RedirectAttributes redirectAttributes) {
         try {
             userService.createUser(userRequest);
             redirectAttributes.addFlashAttribute("success", "User created successfully");
@@ -75,8 +67,7 @@ public class UserController {
     public String updateUser(
             @PathVariable Long userId,
             @ModelAttribute UserRequest userRequest,
-            RedirectAttributes redirectAttributes
-    ) {
+            RedirectAttributes redirectAttributes) {
         try {
             userService.updateUser(userId, userRequest);
             redirectAttributes.addFlashAttribute("success", "User updated successfully");

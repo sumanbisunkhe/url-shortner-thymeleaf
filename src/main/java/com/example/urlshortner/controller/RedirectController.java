@@ -7,10 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-<<<<<<< HEAD
 
-=======
->>>>>>> c8a73bf542437b4a82eb4ae49705ad7fcf75a231
 import java.net.URI;
 
 @RestController

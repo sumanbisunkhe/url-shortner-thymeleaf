@@ -16,14 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-<<<<<<< HEAD
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-=======
 import org.springframework.web.bind.annotation.*;
->>>>>>> c8a73bf542437b4a82eb4ae49705ad7fcf75a231
 
 @Controller
 @RequestMapping("/auth")
@@ -46,7 +39,8 @@ public class AuthController {
             log.info("Attempting authentication for user: {}", authRequest.getUsernameOrEmail());
 
             // Create authentication token
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(authRequest.getUsernameOrEmail(), authRequest.getPassword());
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                    authRequest.getUsernameOrEmail(), authRequest.getPassword());
 
             // Authenticate user
             Authentication authentication = authenticationManager.authenticate(authToken);
@@ -59,7 +53,8 @@ public class AuthController {
             log.info("User authenticated successfully: {}", username);
 
             // Find user in repository
-            User user = userRepository.findByUsernameOrEmail(username, username).orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+            User user = userRepository.findByUsernameOrEmail(username, username)
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
             // Generate JWT token
             String jwtToken = jwtTokenUtil.generateAccessToken(user);

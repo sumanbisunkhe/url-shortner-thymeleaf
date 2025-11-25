@@ -3,17 +3,9 @@ package com.example.urlshortner.mapper;
 import com.example.urlshortner.dto.request.UserRequest;
 import com.example.urlshortner.dto.response.UserResponse;
 import com.example.urlshortner.model.User;
-<<<<<<< HEAD
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Named;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
-=======
 import org.mapstruct.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
->>>>>>> c8a73bf542437b4a82eb4ae49705ad7fcf75a231
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
