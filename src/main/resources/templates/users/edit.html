@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Edit User</title>
+</head>
+<body>
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="mb-1">Edit User</h1>
+                    <p class="text-muted">Update user information</p>
+                </div>
+                <a th:href="@{/dashboard/users}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i> Back to Users
+                </a>
+            </div>
+
+            <div class="card shadow">
+                <div class="card-body p-4">
+                    <form th:action="@{/dashboard/users/{id}(id=${userId})}" method="post" th:object="${userRequest}" class="needs-validation" novalidate>
+                        <div class="mb-4">
+                            <label for="username" class="form-label">Username</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="bi bi-person"></i>
+                                </span>
+                                <input type="text" class="form-control border-start-0" id="username" th:field="*{username}"
+                                       placeholder="Enter username" required>
+                            </div>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="email" class="form-label">Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="bi bi-envelope"></i>
+                                </span>
+                                <input type="email" class="form-control border-start-0" id="email" th:field="*{email}"
+                                       placeholder="Enter email address" required>
+                            </div>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="role" class="form-label">Role</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="bi bi-shield"></i>
+                                </span>
+                                <select class="form-select border-start-0" id="role" th:field="*{role}" required>
+                                    <option value="">Select a role</option>
+                                    <option th:each="roleOption : ${roles}" th:value="${roleOption}" th:text="${roleOption}"></option>
+                                </select>
+                            </div>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('role')}" th:errors="*{role}"></div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-2"></i> Update User
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

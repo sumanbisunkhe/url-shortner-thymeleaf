@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(pageTitle='User Profile', content=~{::content})}">
+<head>
+    <title>User Profile</title>
+</head>
+<body>
+<div th:fragment="content">
+    <style>
+        /* ========== CORE STYLES ========== */
+        .profile-container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        /* ========== HEADER STYLES ========== */
+        .page-header {
+            background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.08) 0%, rgba(var(--bs-primary-rgb), 0.15) 100%);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: rgba(var(--bs-primary-rgb), 0.1);
+            z-index: 0;
+        }
+
+        .page-header::after {
+            content: '';
+            position: absolute;
+            bottom: -80px;
+            left: -80px;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: rgba(var(--bs-primary-rgb), 0.08);
+            z-index: 0;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--bs-primary);
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .page-subtitle {
+            color: #6c757d;
+            margin-bottom: 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ========== CARD STYLES ========== */
+        .profile-card {
+            border: none;
+            border-radius: 1rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+            transition: all 0.4s ease;
+            overflow: hidden;
+            margin-bottom: 2rem;
+            width: 100%;
+            background-color: #fff;
+        }
+
+        .profile-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+        }
+
+        .card-header-custom {
+            background: linear-gradient(to right, rgba(var(--bs-primary-rgb), 0.08), rgba(var(--bs-primary-rgb), 0.02));
+            border-bottom: none;
+            padding: 1.75rem 2rem;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-header-custom::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 2rem;
+            right: 2rem;
+            height: 1px;
+            background: linear-gradient(to right, rgba(var(--bs-primary-rgb), 0.2), transparent);
+        }
+
+        .card-body-custom {
+            padding: 2.5rem;
+            background-color: #fff;
+        }
+
+        /* ========== PROFILE SECTION STYLES ========== */
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-avatar-wrapper {
+            position: relative;
+            margin-right: 2rem;
+            flex-shrink: 0;
+        }
+
+        /* Update the profile avatar styles to match the image */
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #6f42c1;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: 700;
+            box-shadow: 0 8px 25px rgba(111, 66, 193, 0.2);
+            transition: all 0.4s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .profile-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 20px 40px rgba(var(--bs-primary-rgb), 0.3);
+        }
+
+        .profile-avatar::after {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: -8px;
+            right: -8px;
+            bottom: -8px;
+            border: 2px dashed rgba(111, 66, 193, 0.3);
+            border-radius: 50%;
+            animation: spin 30s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Update the role badge styles to match the image */
+        /* Update the role badge styles to position it at the center bottom */
+        .role-badge {
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            z-index: 2;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .role-badge.admin {
+            background-color: #dc3545;
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .role-badge.user {
+            background-color: #6f42c1;
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .profile-details {
+            flex-grow: 1;
+        }
+
+        .profile-name {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #343a40;
+        }
+
+        .profile-email {
+            font-size: 1.1rem;
+            color: #6c757d;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .profile-email i {
+            margin-right: 0.5rem;
+            color: var(--bs-primary);
+        }
+
+        .profile-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .profile-meta-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .profile-meta-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background-color: rgba(var(--bs-primary-rgb), 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .profile-meta-icon i {
+            font-size: 1rem;
+            color: var(--bs-primary);
+        }
+
+        .profile-meta-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .profile-meta-label {
+            font-size: 0.75rem;
+            color: #6c757d;
+            margin-bottom: 0;
+        }
+
+        .profile-meta-value {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0;
+            color: #343a40;
+        }
+
+        /* ========== PROFILE INFO ITEMS ========== */
+        .profile-info-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-subtitle {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #343a40;
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .profile-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .profile-info-item {
+            display: flex;
+            align-items: center;
+            padding: 1.25rem;
+            border-radius: 1rem;
+            background-color: rgba(var(--bs-light-rgb), 0.5);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            height: 100%;
+        }
+
+        .profile-info-item:hover {
+            background-color: rgba(var(--bs-light-rgb), 0.8);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            border-color: rgba(var(--bs-primary-rgb), 0.1);
+        }
+
+        .profile-info-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 15px;
+            background-color: rgba(var(--bs-primary-rgb), 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1.25rem;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        .profile-info-item:hover .profile-info-icon {
+            background-color: rgba(var(--bs-primary-rgb), 0.2);
+        }
+
+        .profile-info-icon i {
+            font-size: 1.5rem;
+            color: var(--bs-primary);
+        }
+
+        .profile-info-content {
+            flex-grow: 1;
+        }
+
+        .profile-info-label {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-bottom: 0.25rem;
+        }
+
+        .profile-info-value {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0;
+            color: #343a40;
+        }
+
+        /* ========== ACTION BUTTONS ========== */
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn-action {
+            border-radius: 0.75rem;
+            padding: 0.875rem 1.75rem;
+            font-weight: 600;
+            transition: all 0.4s;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            flex: 1;
+            min-width: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-action::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.4s;
+            z-index: -1;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-action:hover::before {
+            left: 100%;
+        }
+
+        .btn-action i {
+            margin-right: 0.75rem;
+            font-size: 1.1rem;
+            transition: transform 0.3s;
+        }
+
+        .btn-action:hover i {
+            transform: scale(1.2);
+        }
+
+        /* ========== STATS CARD STYLES ========== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            border-radius: 1rem;
+            padding: 1.75rem;
+            background-color: #fff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--bs-primary);
+            height: 100%;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 20px;
+            background-color: rgba(var(--bs-primary-rgb), 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .stat-icon i {
+            font-size: 1.75rem;
+            color: var(--bs-primary);
+        }
+
+        .stat-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #343a40;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: #6c757d;
+            margin-bottom: 0;
+        }
+
+        /* ========== ACTIVITY CARD STYLES ========== */
+        .activity-item {
+            display: flex;
+            padding: 1.25rem 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .activity-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            background-color: rgba(var(--bs-primary-rgb), 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .activity-icon i {
+            font-size: 1.25rem;
+            color: var(--bs-primary);
+        }
+
+        .activity-content {
+            flex-grow: 1;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-time {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+
+        /* ========== SECTION TITLE STYLING ========== */
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--bs-primary);
+            margin-bottom: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title i {
+            font-size: 1.75rem;
+            margin-right: 0.75rem;
+        }
+
+        /* ========== MODAL STYLES ========== */
+        .modal-content {
+            border: none;
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .modal-footer {
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+        }
+
+        /* ========== RESPONSIVE ADJUSTMENTS ========== */
+        @media (max-width: 992px) {
+            .card-body-custom {
+                padding: 2rem;
+            }
+
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+                padding-bottom: 1.5rem;
+            }
+
+            .profile-avatar-wrapper {
+                margin-right: 0;
+                margin-bottom: 1.5rem;
+            }
+
+            .profile-meta {
+                justify-content: center;
+            }
+
+            .stat-value {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page-header {
+                padding: 1.5rem;
+            }
+
+            .card-body-custom {
+                padding: 1.5rem;
+            }
+
+            .profile-avatar {
+                width: 100px;
+                height: 100px;
+                font-size: 2.5rem;
+            }
+
+            .role-badge {
+                padding: 0.35rem 0.85rem;
+                font-size: 0.75rem;
+            }
+
+            .profile-name {
+                font-size: 1.5rem;
+            }
+
+            .profile-info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-info-item {
+                padding: 1rem;
+            }
+
+            .profile-info-icon {
+                width: 45px;
+                height: 45px;
+                margin-right: 1rem;
+            }
+
+            .profile-info-icon i {
+                font-size: 1.25rem;
+            }
+
+            .stat-card {
+                padding: 1.5rem;
+            }
+
+            .stat-icon {
+                width: 50px;
+                height: 50px;
+            }
+
+            .stat-icon i {
+                font-size: 1.5rem;
+            }
+
+            .stat-value {
+                font-size: 1.75rem;
+            }
+
+            .btn-action {
+                padding: 0.75rem 1.25rem;
+                min-width: 150px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .page-header {
+                padding: 1.25rem;
+                text-align: center;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .card-header-custom {
+                padding: 1.25rem;
+            }
+
+            .card-body-custom {
+                padding: 1.25rem;
+            }
+
+            .profile-avatar {
+                width: 90px;
+                height: 90px;
+                font-size: 2.25rem;
+            }
+
+            .profile-name {
+                font-size: 1.35rem;
+            }
+
+            .profile-email {
+                font-size: 1rem;
+            }
+
+            .section-title {
+                font-size: 1.25rem;
+            }
+
+            .section-title i {
+                font-size: 1.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-card {
+                padding: 1.25rem;
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+            }
+
+            .btn-action {
+                width: 100%;
+                margin-bottom: 0.75rem;
+            }
+        }
+    </style>
+
+    <div class="profile-container py-4">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="bi bi-person-badge me-2"></i>User Profile
+            </h1>
+            <p class="page-subtitle">View and manage user information</p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Left Column - User Info -->
+            <div class="col-lg-4">
+                <!-- Profile Card -->
+                <div class="profile-card">
+                    <div class="card-header-custom">
+                        <h2 class="section-title">
+                            <i class="bi bi-person-circle me-2"></i>Profile
+                        </h2>
+                    </div>
+                    <div class="card-body-custom">
+                        <!-- Profile Header Section -->
+                        <div class="profile-header">
+                            <!-- Update the badge HTML to match the image -->
+                            <div class="profile-avatar-wrapper">
+                                <div class="profile-avatar">
+                                    <span th:text="${user.username.substring(0,1)}"></span>
+                                </div>
+                                <!-- Updated role badge -->
+                                <div th:class="${user.role == 'ADMIN' ? 'role-badge admin' : 'role-badge user'}">
+                                    <span th:text="${user.role}"></span>
+                                </div>
+                            </div>
+                            <div class="profile-details">
+                                <h3 class="profile-name" th:text="${user.username}"></h3>
+                                <div class="profile-email">
+                                    <i class="bi bi-envelope"></i>
+                                    <span th:text="${user.email}"></span>
+                                </div>
+                                <div class="profile-meta">
+                                    <div class="profile-meta-item">
+                                        <div class="profile-meta-icon">
+                                            <i class="bi bi-person-vcard"></i>
+                                        </div>
+                                        <div class="profile-meta-content">
+                                            <span class="profile-meta-label">User ID</span>
+                                            <span class="profile-meta-value" th:text="${user.id}"></span>
+                                        </div>
+                                    </div>
+                                    <div class="profile-meta-item">
+                                        <div class="profile-meta-icon">
+                                            <i class="bi bi-calendar-check"></i>
+                                        </div>
+                                        <div class="profile-meta-content">
+                                            <span class="profile-meta-label">Joined</span>
+                                            <span class="profile-meta-value" th:text="${user.createdAt}"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Additional Information Section -->
+                        <div class="profile-info-section">
+                            <h4 class="section-subtitle">Account Information</h4>
+                            <div class="profile-info-grid">
+                                <div class="profile-info-item">
+                                    <div class="profile-info-icon">
+                                        <i class="bi bi-calendar-check"></i>
+                                    </div>
+                                    <div class="profile-info-content">
+                                        <div class="profile-info-label">Account Created</div>
+                                        <p class="profile-info-value" th:text="${user.createdAt}"></p>
+                                    </div>
+                                </div>
+
+                                <div class="profile-info-item">
+                                    <div class="profile-info-icon">
+                                        <i class="bi bi-calendar-event"></i>
+                                    </div>
+                                    <div class="profile-info-content">
+                                        <div class="profile-info-label">Last Updated</div>
+                                        <p class="profile-info-value" th:text="${user.updatedAt}"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="action-buttons">
+                            <a th:href="@{/dashboard/users/{id}/edit(id=${user.id})}" class="btn btn-primary btn-action">
+                                <i class="bi bi-pencil-square"></i>Edit Profile
+                            </a>
+                            <button type="button" class="btn btn-outline-danger btn-action" data-bs-toggle="modal" data-bs-target="#deleteUserModal">
+                                <i class="bi bi-trash"></i>Delete User
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Stats & Activity -->
+            <div class="col-lg-8">
+                <!-- Stats Card -->
+                <div class="profile-card">
+                    <div class="card-header-custom">
+                        <h2 class="section-title">
+                            <i class="bi bi-graph-up me-2"></i>User Statistics
+                        </h2>
+                    </div>
+                    <div class="card-body-custom">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="bi bi-link-45deg"></i>
+                                </div>
+                                <h3 class="stat-value" th:text="${urlAnalytics.totalUrlCount}">0</h3>
+                                <p class="stat-label">Total URLs</p>
+                            </div>
+
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="bi bi-cursor-fill"></i>
+                                </div>
+                                <h3 class="stat-value" th:text="${urlAnalytics.totalClicks}">0</h3>
+                                <p class="stat-label">Total Clicks</p>
+                            </div>
+
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="bi bi-calendar-check"></i>
+                                </div>
+                                <h3 class="stat-value" th:text="${urlAnalytics.activeUrlCount}">0</h3>
+                                <p class="stat-label">Active URLs</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity Card -->
+                <div class="profile-card">
+                    <div class="card-header-custom">
+                        <h2 class="section-title">
+                            <i class="bi bi-activity me-2"></i>Recent Activity
+                        </h2>
+                    </div>
+                    <div class="card-body-custom">
+                        <div th:if="${#lists.isEmpty(urlAnalytics.recentUrls)}" class="text-center py-4">
+                            <div class="mb-3">
+                                <i class="bi bi-calendar-x text-muted" style="font-size: 3rem;"></i>
+                            </div>
+                            <h5>No Recent Activity</h5>
+                            <p class="text-muted">This user hasn't created any URLs yet.</p>
+                        </div>
+
+                        <div th:unless="${#lists.isEmpty(urlAnalytics.recentUrls)}" class="activity-list">
+                            <div class="activity-item" th:each="url : ${urlAnalytics.recentUrls}">
+                                <div class="activity-icon">
+                                    <i class="bi bi-link-45deg"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <h6 class="activity-title">
+                                        <a th:href="@{/urls/{shortCode}(shortCode=${url.shortCode})}" class="text-decoration-none">
+                                            <span th:text="${url.shortCode}"></span>
+                                        </a>
+                                        <span class="badge bg-success ms-2" th:if="${url.active}">Active</span>
+                                        <span class="badge bg-danger ms-2" th:unless="${url.active}">Inactive</span>
+                                    </h6>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <p class="activity-time" th:text="${url.createdAt}"></p>
+                                        <span class="badge bg-light text-dark">
+                                            <i class="bi bi-cursor-fill me-1"></i>
+                                            <span th:text="${url.clickCount}"></span> clicks
+                                        </span>
+                                    </div>
+                                    <p class="text-truncate mb-0">
+                                        <small class="text-muted" th:text="${url.originalUrl}"></small>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete User Modal -->
+    <div class="modal fade" id="deleteUserModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="mb-4">
+                        <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 3rem;"></i>
+                    </div>
+                    <h4 class="mb-3">Are you sure?</h4>
+                    <p>Do you really want to delete user <strong th:text="${user.username}"></strong>?</p>
+                    <p class="text-danger mb-0"><small>This action cannot be undone and will delete all associated URLs.</small></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form th:action="@{/dashboard/users/{id}/delete(id=${user.id})}" method="post">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash me-2"></i> Delete User
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

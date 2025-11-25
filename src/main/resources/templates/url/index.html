@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html th:replace="~{fragments/layout :: layout(pageTitle='URL Shortener', content=~{:: #main-content})}">
+<div id="main-content">
+    <style>
+        /* Custom styles for index page */
+        .app-container {
+            min-height: calc(100vh - 56px);
+            display: flex;
+            flex-direction: column;
+            /* Add padding to account for fixed navbar */
+            padding-top: 70px;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.08) 0%, rgba(var(--bs-primary-rgb), 0.15) 100%);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: rgba(var(--bs-primary-rgb), 0.1);
+            z-index: 0;
+        }
+
+        .hero-section::after {
+            content: '';
+            position: absolute;
+            bottom: -80px;
+            left: -80px;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: rgba(var(--bs-primary-rgb), 0.08);
+            z-index: 0;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--bs-primary);
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .hero-subtitle {
+            font-size: 1rem;
+            color: #495057;
+            margin-bottom: 1rem;
+        }
+
+        .form-card {
+            border: none;
+            border-radius: 1rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            transition: all 0.4s ease;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            width: 100%;
+        }
+
+        .form-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header-custom {
+            background: linear-gradient(to right, rgba(var(--bs-primary-rgb), 0.08), rgba(var(--bs-primary-rgb), 0.02));
+            border-bottom: none;
+            padding: 1.75rem 2rem;
+            position: relative;
+        }
+
+        .card-header-custom::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 2rem;
+            right: 2rem;
+            height: 1px;
+            background: linear-gradient(to right, rgba(var(--bs-primary-rgb), 0.2), transparent);
+        }
+
+        .card-body-custom {
+            padding: 2.5rem;
+            background-color: #fff;
+        }
+
+        .card-footer-custom {
+            background-color: rgba(var(--bs-light-rgb), 0.5);
+            border-top: none;
+            padding: 1.5rem 2.5rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--bs-primary);
+            margin-bottom: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title i {
+            font-size: 1.75rem;
+            margin-right: 0.75rem;
+        }
+
+        .input-group-lg .form-control {
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            padding: 0.875rem 1.25rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s;
+        }
+
+        .input-group-lg .form-control:focus {
+            border-color: rgba(var(--bs-primary-rgb), 0.4);
+            box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.15);
+        }
+
+        .input-group-lg .input-group-text {
+            border-radius: 0.75rem 0 0 0.75rem;
+            background-color: rgba(var(--bs-light-rgb), 0.5);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-right: none;
+        }
+
+        .btn-custom {
+            border-radius: 0.75rem;
+            padding: 0.875rem 1.75rem;
+            font-weight: 600;
+            transition: all 0.4s;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .btn-custom::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.4s;
+            z-index: -1;
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(var(--bs-primary-rgb), 0.2);
+        }
+
+        .btn-custom:hover::before {
+            left: 100%;
+        }
+
+        .btn-custom i {
+            transition: transform 0.3s;
+        }
+
+        .btn-custom:hover i {
+            transform: scale(1.2);
+        }
+
+        .tips-card {
+            border: none;
+            border-radius: 1.25rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+            transition: all 0.4s ease;
+            overflow: hidden;
+            background-color: #fff;
+            width: 100%;
+        }
+
+        .tips-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+        }
+
+        .tips-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .tips-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 15px;
+            background-color: rgba(var(--bs-warning-rgb), 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .tips-icon i {
+            color: var(--bs-warning);
+            font-size: 1.5rem;
+        }
+
+        .tips-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #343a40;
+            margin-bottom: 0;
+        }
+
+        .tip-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .tip-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .tip-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            background-color: rgba(var(--bs-success-rgb), 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .tip-icon i {
+            color: var(--bs-success);
+            font-size: 1.125rem;
+        }
+
+        .tip-content {
+            flex: 1;
+        }
+
+        .tip-content p {
+            margin-bottom: 0;
+            color: #495057;
+            font-size: 1rem;
+        }
+
+        .feature-section {
+            margin-top: 3rem;
+            width: 100%;
+        }
+
+        .feature-card {
+            background-color: #fff;
+            border-radius: 1rem;
+            padding: 1.75rem;
+            height: 100%;
+            transition: all 0.3s;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon-wrapper {
+            width: 60px;
+            height: 60px;
+            border-radius: 20px;
+            background-color: rgba(var(--bs-primary-rgb), 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .feature-icon-wrapper i {
+            font-size: 1.75rem;
+            color: var(--bs-primary);
+        }
+
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #343a40;
+        }
+
+        .feature-description {
+            color: #6c757d;
+            margin-bottom: 0;
+        }
+
+        .security-badge {
+            display: flex;
+            align-items: center;
+            background-color: rgba(var(--bs-success-rgb), 0.1);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            transition: all 0.3s;
+        }
+
+        .security-badge:hover {
+            background-color: rgba(var(--bs-success-rgb), 0.15);
+            transform: translateY(-3px);
+        }
+
+        .security-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: rgba(var(--bs-success-rgb), 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .security-icon i {
+            font-size: 1.5rem;
+            color: var(--bs-success);
+        }
+
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(var(--bs-primary-rgb), 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(var(--bs-primary-rgb), 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(var(--bs-primary-rgb), 0);
+            }
+        }
+
+        @media (max-width: 992px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 2rem 1.5rem;
+                margin-bottom: 2rem;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+
+            .card-body-custom {
+                padding: 1.75rem;
+            }
+
+            .card-footer-custom {
+                padding: 1.25rem 1.75rem;
+            }
+
+            .section-title {
+                font-size: 1.25rem;
+            }
+
+            .section-title i {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+
+    <div class="app-container py-3">
+        <div class="container">
+            <!-- Hero Section - Reorganized with text left and buttons right -->
+            <div class="hero-section mb-4">
+                <div class="hero-content d-flex flex-wrap justify-content-between align-items-center">
+                    <div class="text-start">
+
+                        <p class="hero-subtitle mb-0 font-monospace">Create short, memorable links that redirect to your long URLs</p>
+                    </div>
+                    <div class="d-flex gap-3 flex-wrap mt-3 mt-md-0">
+                        <a th:href="@{/urls/my-urls}" class="btn btn-outline-primary btn-custom">
+                            <i class="bi bi-list-ul me-2"></i>My URLs
+                        </a>
+                        <a th:href="@{/dashboard}" class="btn btn-outline-secondary btn-custom">
+                            <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Full width container for all cards -->
+            <div class="row">
+                <div class="col-12">
+                    <!-- URL Shortener Form -->
+                    <div class="form-card mb-5 pulse-animation">
+                        <div class="card-header-custom">
+                            <h2 class="section-title">
+                                <i class="bi bi-scissors me-2"></i>Shorten a URL
+                            </h2>
+                        </div>
+                        <div class="card-body-custom">
+                            <form th:action="@{/urls}" method="post" th:object="${urlRequest}" class="needs-validation">
+                                <div class="mb-4">
+                                    <label for="originalUrl" class="form-label fw-medium fs-5 mb-2">Long URL</label>
+                                    <div class="input-group input-group-lg">
+                                        <span class="input-group-text">
+                                            <i class="bi bi-link fs-4"></i>
+                                        </span>
+                                        <input type="url" class="form-control shadow-sm"
+                                               th:classappend="${#fields.hasErrors('originalUrl')} ? 'is-invalid' : ''"
+                                               id="originalUrl"
+                                               th:field="*{originalUrl}"
+                                               required
+                                               placeholder="https://example.com/your-long-url-goes-here">
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('originalUrl')}">
+                                            <span th:errors="*{originalUrl}"></span>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted mt-2 d-block">Enter the URL you want to shorten</small>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="validityDays" class="form-label fw-medium fs-5 mb-2">Expiration
+                                        (Days)</label>
+                                    <div class="input-group input-group-lg">
+                                        <span class="input-group-text">
+                                            <i class="bi bi-calendar-event fs-4"></i>
+                                        </span>
+                                        <input type="number" class="form-control shadow-sm"
+                                               th:classappend="${#fields.hasErrors('validityDays')} ? 'is-invalid' : ''"
+                                               id="validityDays"
+                                               th:field="*{validityDays}"
+                                               min="1" max="365"
+                                               placeholder="30">
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('validityDays')}">
+                                            <span th:errors="*{validityDays}"></span>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted mt-2 d-block">How many days should this URL be valid
+                                        (1-365)</small>
+                                </div>
+
+                                <div class="d-grid mt-4">
+                                    <button type="submit" class="btn btn-primary btn-lg btn-custom">
+                                        <i class="bi bi-link-45deg me-2 fs-4"></i>Shorten URL
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="card-footer-custom">
+                            <div class="security-badge">
+                                <div class="security-icon">
+                                    <i class="bi bi-shield-check"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1 fw-semibold">Safe & Secure</h6>
+                                    <small class="text-muted">All URLs are checked for safety and monitored for
+                                        abuse</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tips Card -->
+                    <div class="tips-card p-4 mb-5">
+                        <div class="tips-header">
+                            <div class="tips-icon">
+                                <i class="bi bi-lightbulb"></i>
+                            </div>
+                            <h5 class="tips-title">Tips for URL Shortening</h5>
+                        </div>
+
+                        <div class="tip-item">
+                            <div class="tip-icon">
+                                <i class="bi bi-check-circle-fill"></i>
+                            </div>
+                            <div class="tip-content">
+                                <p>Use short URLs for social media posts to save character space and improve
+                                    engagement</p>
+                            </div>
+                        </div>
+
+                        <div class="tip-item">
+                            <div class="tip-icon">
+                                <i class="bi bi-check-circle-fill"></i>
+                            </div>
+                            <div class="tip-content">
+                                <p>Track clicks to measure engagement and understand your audience better</p>
+                            </div>
+                        </div>
+
+                        <div class="tip-item">
+                            <div class="tip-icon">
+                                <i class="bi bi-check-circle-fill"></i>
+                            </div>
+                            <div class="tip-content">
+                                <p>Set appropriate expiration dates for time-sensitive content like promotions or
+                                    events</p>
+                            </div>
+                        </div>
+
+                        <div class="tip-item">
+                            <div class="tip-icon">
+                                <i class="bi bi-check-circle-fill"></i>
+                            </div>
+                            <div class="tip-content">
+                                <p>Use QR codes to share your shortened URLs in print materials and physical
+                                    advertisements</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Features Section - Full Width -->
+                    <div class="feature-section">
+                        <h3 class="text-center mb-4 fw-bold">Why Use Our URL Shortener?</h3>
+                        <div class="row g-4">
+                            <div class="col-md-4">
+                                <div class="feature-card">
+                                    <div class="feature-icon-wrapper">
+                                        <i class="bi bi-graph-up"></i>
+                                    </div>
+                                    <h4 class="feature-title">Analytics & Tracking</h4>
+                                    <p class="feature-description">Monitor clicks and engagement with detailed
+                                        statistics for each shortened URL.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="feature-card">
+                                    <div class="feature-icon-wrapper">
+                                        <i class="bi bi-qr-code"></i>
+                                    </div>
+                                    <h4 class="feature-title">QR Code Generation</h4>
+                                    <p class="feature-description">Automatically generate QR codes for your shortened
+                                        URLs for print materials.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="feature-card">
+                                    <div class="feature-icon-wrapper">
+                                        <i class="bi bi-shield-lock"></i>
+                                    </div>
+                                    <h4 class="feature-title">Secure & Reliable</h4>
+                                    <p class="feature-description">All URLs are securely stored and available with 99.9%
+                                        uptime guarantee.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</html>

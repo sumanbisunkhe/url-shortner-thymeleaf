@@ -1,0 +1,53 @@
+package com.example.urlshortner.mapper;
+
+import com.example.urlshortner.dto.request.UserRequest;
+import com.example.urlshortner.dto.response.UserResponse;
+import com.example.urlshortner.model.User;
+<<<<<<< HEAD
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+=======
+import org.mapstruct.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.beans.factory.annotation.Autowired;
+>>>>>>> c8a73bf542437b4a82eb4ae49705ad7fcf75a231
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+@Mapper(componentModel = "spring")
+public abstract class UserMapper {
+    private static final DateTimeFormatter FORMATTER =
+            DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a");
+
+    protected PasswordEncoder passwordEncoder;
+
+    // Add constructor injection
+    @Autowired
+    public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @Mapping(target = "password", source = "password", qualifiedByName = "encodePassword")
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    public abstract User toEntity(UserRequest userRequest);
+
+    @Named("encodePassword")
+    public String encodePassword(String password) {
+        return passwordEncoder.encode(password);
+    }
+
+    @Mapping(source = "createdAt", target = "createdAt", qualifiedByName = "formatDateTime")
+    @Mapping(source = "updatedAt", target = "updatedAt", qualifiedByName = "formatDateTime")
+    public abstract UserResponse toResponse(User user);
+
+    @Named("formatDateTime")
+    protected String formatDateTime(LocalDateTime dateTime) {
+        if (dateTime == null) return "";
+        return dateTime.format(FORMATTER);
+    }
+}
