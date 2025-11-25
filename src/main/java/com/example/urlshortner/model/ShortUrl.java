@@ -3,10 +3,7 @@ package com.example.urlshortner.model;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-<<<<<<< HEAD
 
-=======
->>>>>>> c8a73bf542437b4a82eb4ae49705ad7fcf75a231
 import java.time.LocalDateTime;
 
 @Entity
@@ -44,6 +41,7 @@ public class ShortUrl {
 
     @Column(nullable = false)
     private String createdBy;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;

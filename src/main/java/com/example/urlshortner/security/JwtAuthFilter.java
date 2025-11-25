@@ -10,10 +10,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-<<<<<<< HEAD
 
-=======
->>>>>>> c8a73bf542437b4a82eb4ae49705ad7fcf75a231
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -26,8 +23,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
+            HttpServletResponse response,
+            FilterChain filterChain)
             throws ServletException, IOException {
         try {
             String jwt = parseJwt(request);
